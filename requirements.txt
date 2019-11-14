@@ -2,6 +2,7 @@ argh==0.26.2
 atomicwrites==1.3.0
 attrs==19.3.0
 Click==7.0
+-e git+git@github.com:CrusaderW/CombatLogAPI.git@c9cf93fa13ca2996ed4a6dd2a40cef980a8e9faf#egg=combatLogAPI
 coverage==4.5.4
 Flask==1.1.1
 flask-mongoengine==0.9.5
@@ -12,7 +13,9 @@ Jinja2==2.10.3
 MarkupSafe==1.1.1
 mongoengine==0.18.2
 more-itertools==7.2.0
+numpy==1.17.4
 packaging==19.2
+pandas==0.25.3
 pathtools==0.1.2
 pkg-resources==0.0.0
 pluggy==0.13.0
@@ -21,7 +24,9 @@ pymongo==3.9.0
 pyparsing==2.4.2
 pytest==5.2.1
 pytest-flask==0.15.0
+python-dateutil==2.8.1
 python-dotenv==0.10.3
+pytz==2019.3
 PyYAML==5.1.2
 simplejson==3.16.0
 six==1.12.0
