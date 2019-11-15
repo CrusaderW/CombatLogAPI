@@ -5,6 +5,7 @@ from combatLogAPI import models
 from combatLogAPI.constants import ACTION_TYPES, SKILL_BY_ME, SKILL_TARGET_ME, \
         FOR_SPLITTER, EVENT_SPLITTER, CRITICAL_SUBSTRING
 #TODO: refactor to dataframe siting in RAM globallz accessible
+import json
 import numpy as np
 import pandas as pd
 
@@ -12,27 +13,37 @@ import pandas as pd
 class LogStream:
 
     def __init__(self, json_data):
-        self.datetimeStart = json_data['datetimeStart']
-        self.datetimeEnd = json_data['datetimeEnd']
         self.username = json_data['username']
         self.logs = json_data['logs']
+        self.response = {'username': self.username}
+        self.df = pd.DataFrame()
 
     def parse(self):
-        parsedLogStream = []
         for log in self.logs:
-            #try:
+            try:
                 logLine = LogLine(log['Value'], self.username)
                 parsedLogLine = logLine.parse()
-                parsedLogStream.append(parsedLogLine)
-            #except Exception as e:
-            #    print(e)
-            #    print('Skipped parsing the following line due to an error.')
+                self.df = self.df.append(parsedLogLine, ignore_index = True)
+            except Exception as e:
+                print(e)
+                print('Skipped parsing the following line due to an error.')
                 print(log['Value'])
-                print(parsedLogLine)
                 #TODO: Write unhandled lines to logfile.
-        response = {'lines_parsed': len(parsedLogStream)}
-        #print(response)
-        return response
+        self.response['lines_parsed'] = len(self.df)
+        self.response['lines_skipped'] = len(self.logs)-len(self.df)
+        return self.response
+
+    def get_response(self):
+        self.response['parsed_logs'] = {}
+        self.response["parsed_logs"]['damage_done'] = self.getDamageDone(self.df)
+        self.response["parsed_logs"]['damage_recieved'] = None
+        self.response["parsed_logs"]['healing_done'] = None
+        self.response["parsed_logs"]['healing_recieved'] = None
+        return self.response
+
+    def getDamageDone(self, df):
+        res = df.groupby('source').agg('sum').skillAmount.to_json()
+        return (json.loads(res))
 
 class LogLine():
 
@@ -47,7 +58,9 @@ class LogLine():
                                   'skillName',
                                   'skillAmount',
                                   'skillCritical',
-                                  'username']}
+                                  'username'],
+                     }
+
         return
 
     def parse(self):
@@ -106,4 +119,4 @@ class LogLine():
         return skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[0]
 
     def getSkillAmount(self, skillTargetAndSkillAmountPart):
-        return skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[1].split(' ')[0]
+        return int(skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[1].split(' ')[0])

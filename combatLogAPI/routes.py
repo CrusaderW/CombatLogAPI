@@ -7,5 +7,6 @@ def init_routes(app):
     def streamLogs():
         json_data = request.get_json()
         logStream = logparser.LogStream(json_data)
-        response = logStream.parse()
+        logStream.parse()
+        response = logStream.get_response()
         return jsonify(response)

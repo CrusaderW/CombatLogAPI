@@ -1,9 +1,7 @@
 from combatLogAPI import create_app
 
-json_streamLogs = {
+json_Molan = {
   "username": "GeneralMolan",
-  "datetimeStart": "2019-10-23T11:18:33.232Z",
-  "datetimeEnd": "2019-10-23T11:18:33.232Z",
   "logs": [
     {
       "Key": "2019-10-23T11:18:33.232Z",
@@ -24,8 +22,65 @@ json_streamLogs = {
   ]
 }
 
-def test_streamLogs(client):
-    response = client.post('/streamLogs', json=json_streamLogs)
-    json_response = response.get_json()
-    assert json_response == {"lines_parsed":4}
+json_Crusader = {
+  "username": "CrusaderW",
+  "logs": [
+    {
+      "Key": "2019-09-02T23:18:50.522Z",
+      "Value": "2019-09-02T23:18:50.522Z INFO    COMBAT    - Combat _||_ Event=[Your Basic Shot hit Practice Dummy for 438  damage.] "
+    },
+    {
+      "Key": "2019-09-02T23:18:55.459Z",
+      "Value": "2019-09-02T23:18:55.459Z INFO    COMBAT    - Combat _||_ Event=[Your Ricochet Shot hit Practice Dummy for 106  damage.] "
+    },
+    {
+      "Key": "2019-09-02T23:18:55.628Z",
+      "Value": "2019-09-02T23:18:55.628Z INFO    COMBAT    - Combat _||_ Event=[Your Ricochet Shot hit Practice Dummy for 106  damage.] "
+    },
+    {
+      "Key": "2019-09-02T23:18:55.759Z",
+      "Value": "2019-09-02T23:18:55.759Z INFO    COMBAT    - Combat _||_ Event=[Your Ricochet Shot hit Practice Dummy for 136  damage (Critical).] "
+    },
+    {
+      "Key": "2019-09-02T23:19:01.765Z",
+      "Value": "2019-09-02T23:19:01.765Z INFO    COMBAT    - Combat _||_ Event=[Your Fire Wall hit Practice Dummy for 40  damage.] "
+    },
+    {
+      "Key": "2019-09-02T23:19:01.765Z",
+      "Value": "2019-09-02T23:19:01.765Z INFO    COMBAT    - Combat _||_ Event=[Your Fire Wall hit Practice Dummy for 43  damage.] "
+    },
+    {
+      "Key": "2019-09-02T23:19:01.766Z",
+      "Value": "2019-09-02T23:19:01.766Z INFO    COMBAT    - Combat _||_ Event=[Your Fire Wall hit Practice Dummy for 41  damage.] "
+    },
+  ]
+}
 
+def test_streamLogs(client):
+	response = client.post('/streamLogs', json=json_Molan)
+	json_response = response.get_json()
+	assert json_response == {"username": "GeneralMolan",
+				 "lines_parsed":4,
+				 'lines_skipped': 0,
+  			      	 "parsed_logs": {'damage_done':
+					   		{'GeneralMolan': 616.0},
+					      	 'damage_recieved': None,
+					         'healing_done': None,
+					         'healing_recieved': None,
+    			        		}
+				}
+
+	response = client.post('/streamLogs', json=json_Crusader)
+	json_response = response.get_json()
+	assert json_response == {"username": "CrusaderW",
+				 "lines_parsed":7,
+				 'lines_skipped': 0,
+  			      	 "parsed_logs": {'damage_done':
+					   		{'CrusaderW': 910.0},
+					   		#[{'GeneralMolan': 616.0},
+					   		# {'CrusaderW': 910.0}],
+					      	 'damage_recieved': None,
+					         'healing_done': None,
+					         'healing_recieved': None,
+    			        		}
+				}
