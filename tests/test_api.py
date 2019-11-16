@@ -13,9 +13,10 @@ def test_streamLogs(client):
 				 'lines_skipped': 0,
   			      	 "parsed_logs": {'damage_done':
 					   		{'GeneralMolan': 616.0},
-					      	 'damage_recieved': None,
-					         'healing_done': None,
-					         'healing_recieved': None,
+                                                 'damage_recieved':
+                                                        {'Practice Dummy': 616.0},
+					         'healing_done': {},
+					         'healing_recieved': {},
     			        		}
 				}
 
@@ -27,9 +28,10 @@ def test_streamLogs(client):
   			      	 "parsed_logs": {'damage_done':
 					   		{'GeneralMolan': 616.0,
 					   		 'CrusaderW': 910.0},
-					      	 'damage_recieved': None,
-					         'healing_done': None,
-					         'healing_recieved': None,
+					      	 'damage_recieved':
+                                                        {"Practice Dummy":1526.0},
+					         'healing_done': {},
+					         'healing_recieved': {},
     			        		}
 				}
 

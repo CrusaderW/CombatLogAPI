@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import pandas as pd
+from combatLogAPI.constants import ACTION_TYPES
 
 
 class Singleton(type):
@@ -26,6 +27,22 @@ class masterDF(metaclass=Singleton):
 
 
 def getDamageDone(df):
-    res = df.groupby('source').agg('sum').skillAmount.to_json()
+    res = df[df.action == "HIT"].groupby('source').agg('sum').skillAmount.to_json()
+    print(res)
+    return (json.loads(res))
+
+def getDamageRecieved(df):
+    res = df[df.action == "HIT"].groupby('target').agg('sum').skillAmount.to_json()
+    print(res)
+    return (json.loads(res))
+
+def getHealingDone(df):
+    res = df[df.action == "HEAL"].groupby('source').agg('sum').skillAmount.to_json()
+    print(res)
+    return (json.loads(res))
+
+def getHealingRecieved(df):
+    res = df[df.action == "HEAL"].groupby('target').agg('sum').skillAmount.to_json()
+    print(res)
     return (json.loads(res))
 

@@ -33,9 +33,9 @@ class LogStream:
     def get_response(self):
         self.response['parsed_logs'] = {}
         self.response["parsed_logs"]['damage_done'] = masterDF.getDamageDone(self.masterdf.getDataFrame())
-        self.response["parsed_logs"]['damage_recieved'] = None
-        self.response["parsed_logs"]['healing_done'] = None
-        self.response["parsed_logs"]['healing_recieved'] = None
+        self.response["parsed_logs"]['damage_recieved'] = masterDF.getDamageRecieved(self.masterdf.getDataFrame())
+        self.response["parsed_logs"]['healing_done'] = masterDF.getHealingDone(self.masterdf.getDataFrame())
+        self.response["parsed_logs"]['healing_recieved'] = masterDF.getHealingRecieved(self.masterdf.getDataFrame())
         return self.response
 
 class LogLine():
