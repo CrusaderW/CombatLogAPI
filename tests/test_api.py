@@ -1,4 +1,37 @@
-from combatLogAPI import create_app
+from combatLogAPI import create_app, masterDF
+
+def test_masterDF_is_Singleton(client):
+        masterDF1=masterDF.masterDF()
+        masterDF2=masterDF.masterDF()
+        assert masterDF1 == masterDF2
+
+def test_streamLogs(client):
+	response = client.post('/streamLogs', json=json_Molan)
+	json_response = response.get_json()
+	assert json_response == {"username": "GeneralMolan",
+				 "lines_parsed":4,
+				 'lines_skipped': 0,
+  			      	 "parsed_logs": {'damage_done':
+					   		{'GeneralMolan': 616.0},
+					      	 'damage_recieved': None,
+					         'healing_done': None,
+					         'healing_recieved': None,
+    			        		}
+				}
+
+	response = client.post('/streamLogs', json=json_Crusader)
+	json_response = response.get_json()
+	assert json_response == {"username": "CrusaderW",
+				 "lines_parsed":7,
+				 'lines_skipped': 0,
+  			      	 "parsed_logs": {'damage_done':
+					   		{'GeneralMolan': 616.0,
+					   		 'CrusaderW': 910.0},
+					      	 'damage_recieved': None,
+					         'healing_done': None,
+					         'healing_recieved': None,
+    			        		}
+				}
 
 json_Molan = {
   "username": "GeneralMolan",
@@ -55,32 +88,3 @@ json_Crusader = {
     },
   ]
 }
-
-def test_streamLogs(client):
-	response = client.post('/streamLogs', json=json_Molan)
-	json_response = response.get_json()
-	assert json_response == {"username": "GeneralMolan",
-				 "lines_parsed":4,
-				 'lines_skipped': 0,
-  			      	 "parsed_logs": {'damage_done':
-					   		{'GeneralMolan': 616.0},
-					      	 'damage_recieved': None,
-					         'healing_done': None,
-					         'healing_recieved': None,
-    			        		}
-				}
-
-	response = client.post('/streamLogs', json=json_Crusader)
-	json_response = response.get_json()
-	assert json_response == {"username": "CrusaderW",
-				 "lines_parsed":7,
-				 'lines_skipped': 0,
-  			      	 "parsed_logs": {'damage_done':
-					   		{'CrusaderW': 910.0},
-					   		#[{'GeneralMolan': 616.0},
-					   		# {'CrusaderW': 910.0}],
-					      	 'damage_recieved': None,
-					         'healing_done': None,
-					         'healing_recieved': None,
-    			        		}
-				}

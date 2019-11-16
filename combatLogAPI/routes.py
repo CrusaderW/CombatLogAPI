@@ -10,3 +10,5 @@ def init_routes(app):
         logStream.parse()
         response = logStream.get_response()
         return jsonify(response)
+
+

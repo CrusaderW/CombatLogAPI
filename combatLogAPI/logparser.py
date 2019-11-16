@@ -1,22 +1,18 @@
 import sys
 from datetime import datetime
 from flask import jsonify
-from combatLogAPI import models
+from combatLogAPI import models, masterDF
 from combatLogAPI.constants import ACTION_TYPES, SKILL_BY_ME, SKILL_TARGET_ME, \
         FOR_SPLITTER, EVENT_SPLITTER, CRITICAL_SUBSTRING
-#TODO: refactor to dataframe siting in RAM globallz accessible
-import json
-import numpy as np
-import pandas as pd
 
 
 class LogStream:
-
     def __init__(self, json_data):
         self.username = json_data['username']
         self.logs = json_data['logs']
         self.response = {'username': self.username}
-        self.df = pd.DataFrame()
+        self.masterdf = masterDF.masterDF()
+        self.df = masterDF.pd.DataFrame()
 
     def parse(self):
         for log in self.logs:
@@ -29,21 +25,18 @@ class LogStream:
                 print('Skipped parsing the following line due to an error.')
                 print(log['Value'])
                 #TODO: Write unhandled lines to logfile.
+        self.masterdf.append(self.df)
         self.response['lines_parsed'] = len(self.df)
         self.response['lines_skipped'] = len(self.logs)-len(self.df)
         return self.response
 
     def get_response(self):
         self.response['parsed_logs'] = {}
-        self.response["parsed_logs"]['damage_done'] = self.getDamageDone(self.df)
+        self.response["parsed_logs"]['damage_done'] = masterDF.getDamageDone(self.masterdf.getDataFrame())
         self.response["parsed_logs"]['damage_recieved'] = None
         self.response["parsed_logs"]['healing_done'] = None
         self.response["parsed_logs"]['healing_recieved'] = None
         return self.response
-
-    def getDamageDone(self, df):
-        res = df.groupby('source').agg('sum').skillAmount.to_json()
-        return (json.loads(res))
 
 class LogLine():
 
