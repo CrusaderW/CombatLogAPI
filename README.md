@@ -18,3 +18,9 @@ install combatLogAPI-module:
 install remaining requirements with pip:
 
 ```pip install -r requirements.txt```
+
+start the application:
+
+```export FLASK_APP=combatLogAPI```
+```flask run```
+
