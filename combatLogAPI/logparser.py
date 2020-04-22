@@ -16,6 +16,13 @@ class LogStream:
         self.masterdf = masterDF.masterDF()
         self.df = masterDF.pd.DataFrame()
 
+    def store(self):
+        #store self.logs to MongoDB
+        rawLogs = models.RawLogs(username=self.username, logs=self.logs)
+        response = rawLogs.save()
+        print(response)
+        return "Sucsess"
+
     def parse(self):
         for log in self.logs:
             try:
@@ -93,6 +100,7 @@ class LogLine():
         for actionType in ACTION_TYPES:
             if (0 < eventPart.find(ACTION_TYPES[actionType])):
                 return actionType
+        print(f'ActionType not found: {eventPart}')
         return None
 
     def getSplittedBySkillAction(self, eventPart):

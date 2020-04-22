@@ -1,7 +1,8 @@
 ACTION_TYPES = {
   "HIT": " hit ",
   "HEAL": " healed ",
-  "DRAIN_DODGE": " drained "
+  "DRAIN_DODGE": " drained ",
+  "RESTORE": " restored ",
 }
 
 SKILL_BY_ME = "Your";

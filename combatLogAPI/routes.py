@@ -7,16 +7,17 @@ def init_routes(app):
     def streamLogs():
         json_data = request.get_json()
         logStream = logparser.LogStream(json_data)
-        logStream.parse()
-        response = logStream.get_response()
-        #response = True
-        return jsonify(response)
+        response = logStream.store()
+        #logStream.parse()
+        #response = logStream.get_response()
+        #response = "Success"
+        return response
 
 
     @app.route('/getAllLogs', methods=['GET'])
     def getLogsByTimeFrame():
         #reqData = request.data()
         masterdf = masterDF.masterDF()
-        response = masterdf.getDataFrame()
+        response = masterdf.collect()
         #response = True
         return jsonify(response)

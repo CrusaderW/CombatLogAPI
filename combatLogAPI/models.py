@@ -1,5 +1,9 @@
 import mongoengine as me
 
+class RawLogs(me.Document):
+    username = me.StringField()
+    logs = me.ListField()
+
 class CombatLogSchema(me.EmbeddedDocument):
     username = me.StringField()
 
@@ -9,6 +13,7 @@ class CombatLogSchema(me.EmbeddedDocument):
     dateTime = me.DateTimeField()
     skillBy = me.StringField()
     skillTarget = me.StringField()
+    damageType = me.StringField()
     skillAmount = me.IntField()
     skillCritical = me.BooleanField()
 
