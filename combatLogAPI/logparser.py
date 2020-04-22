@@ -1,4 +1,5 @@
 import sys
+import json
 from datetime import datetime
 from flask import jsonify
 from combatLogAPI import models, masterDF
@@ -8,6 +9,7 @@ from combatLogAPI.constants import ACTION_TYPES, SKILL_BY_ME, SKILL_TARGET_ME, \
 
 class LogStream:
     def __init__(self, json_data):
+        json_data = json.loads(json_data)
         self.username = json_data['username']
         self.logs = json_data['logs']
         self.response = {'username': self.username}
@@ -17,13 +19,13 @@ class LogStream:
     def parse(self):
         for log in self.logs:
             try:
-                logLine = LogLine(log['Value'], self.username)
+                logLine = LogLine(log, self.username)
                 parsedLogLine = logLine.parse()
                 self.df = self.df.append(parsedLogLine, ignore_index = True)
             except Exception as e:
                 print(e)
                 print('Skipped parsing the following line due to an error.')
-                print(log['Value'])
+                print(log)
                 #TODO: Write unhandled lines to logfile.
         self.masterdf.append(self.df)
         self.response['lines_parsed'] = len(self.df)
@@ -50,6 +52,7 @@ class LogLine():
                                   'target',
                                   'skillName',
                                   'skillAmount',
+                                  'damageType',
                                   'skillCritical',
                                   'username'],
                      }
@@ -69,6 +72,7 @@ class LogLine():
         self.skillTarget = self.getSkillTarget(skillTargetAndSkillAmountPart)
         self.skillAmount = self.getSkillAmount(skillTargetAndSkillAmountPart)
         self.skillCritical = self.isCritical(eventPart)
+        self.damageType = self.getDamageType(skillTargetAndSkillAmountPart)
         self.json = self.get_json()
         return self.json
 
@@ -80,6 +84,7 @@ class LogLine():
         json_data['target'] = self.skillTarget
         json_data['skillName'] = self.skillName
         json_data['skillAmount'] = self.skillAmount
+        json_data['damageType']= self.damageType
         json_data['skillCritical'] = self.skillCritical
         json_data['username'] = self.username
         return json_data
@@ -109,7 +114,13 @@ class LogLine():
         return datetime.fromisoformat(self.log.split(' ',1)[0][0:-1])
 
     def getSkillTarget(self, skillTargetAndSkillAmountPart):
-        return skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[0]
+        if skillTargetAndSkillAmountPart.startswith('for '):
+            return 'unknown'
+        else:
+            return skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[0]
 
     def getSkillAmount(self, skillTargetAndSkillAmountPart):
-        return int(skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[1].split(' ')[0])
+        return int(skillTargetAndSkillAmountPart.split(' ')[1])
+
+    def getDamageType(self, skillTargetAndSkillAmountPart):
+        return skillTargetAndSkillAmountPart.split(' ')[2]

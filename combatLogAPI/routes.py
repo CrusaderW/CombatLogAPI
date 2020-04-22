@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from combatLogAPI import logparser
+from combatLogAPI import logparser, masterDF
 
 def init_routes(app):
 
@@ -9,6 +9,14 @@ def init_routes(app):
         logStream = logparser.LogStream(json_data)
         logStream.parse()
         response = logStream.get_response()
+        #response = True
         return jsonify(response)
 
 
+    @app.route('/getAllLogs', methods=['GET'])
+    def getLogsByTimeFrame():
+        #reqData = request.data()
+        masterdf = masterDF.masterDF()
+        response = masterdf.getDataFrame()
+        #response = True
+        return jsonify(response)
