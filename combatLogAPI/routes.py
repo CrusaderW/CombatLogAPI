@@ -10,8 +10,7 @@ def init_routes(app):
         response = logStream.store()
         #logStream.parse()
         #response = logStream.get_response()
-        #response = "Success"
-        return response
+        return jsonify(response)
 
 
     @app.route('/getAllLogs', methods=['GET'])

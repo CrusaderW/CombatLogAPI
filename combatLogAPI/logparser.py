@@ -20,8 +20,8 @@ class LogStream:
         #store self.logs to MongoDB
         rawLogs = models.RawLogs(username=self.username, logs=self.logs)
         response = rawLogs.save()
-        print(response)
-        return "Sucsess"
+        print(f'{self.username} uploaded {len(self.logs)} lines')
+        return "Success"
 
     def parse(self):
         for log in self.logs:
