@@ -11,6 +11,7 @@ class LogStream:
     def __init__(self, json_data):
         json_data = json.loads(json_data)
         self.username = json_data['username']
+        self.filename = json_data['filename']
         self.logs = json_data['logs']
         self.response = {'username': self.username}
         self.masterdf = masterDF.masterDF()
@@ -18,8 +19,14 @@ class LogStream:
 
     def store(self):
         #store self.logs to MongoDB
-        rawLogs = models.RawLogs(username=self.username, logs=self.logs)
-        response = rawLogs.save()
+        if len(self.logs) > 0:
+            rawLogs = models.RawLogs(username = self.username,
+                                 filename = self.filename,
+                                 start = self.logs[0][:24]
+                                 start = self.logs[-0][:24]
+                                 logs = self.logs,
+                                )
+            response = rawLogs.save()
         print(f'{self.username} uploaded {len(self.logs)} lines')
         return "Success"
 

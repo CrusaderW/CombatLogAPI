@@ -2,6 +2,9 @@ import mongoengine as me
 
 class RawLogs(me.Document):
     username = me.StringField()
+    filename = me.StringField()
+    start = me.StringField()
+    end = me.StringField()
     logs = me.ListField()
 
 class CombatLogSchema(me.EmbeddedDocument):
