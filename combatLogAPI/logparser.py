@@ -22,8 +22,8 @@ class LogStream:
         if len(self.logs) > 0:
             rawLogs = models.RawLogs(username = self.username,
                                  filename = self.filename,
-                                 start = self.logs[0][:24]
-                                 start = self.logs[-0][:24]
+                                 start = self.logs[0][:24],
+                                 end = self.logs[-0][:24],
                                  logs = self.logs,
                                 )
             response = rawLogs.save()
