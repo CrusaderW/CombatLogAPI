@@ -1,12 +1,12 @@
 from flask import request, jsonify
 from combatLogAPI import logparser, masterDF
 
-def init_routes(app):
+def init_routes(app, mongo):
 
     @app.route('/streamLogs', methods=['POST'])
     def streamLogs():
         json_data = request.get_json()
-        logStream = logparser.LogStream(json_data)
+        logStream = logparser.LogStream(json_data, mongo)
         response = logStream.store()
         #logStream.parse()
         #response = logStream.get_response()

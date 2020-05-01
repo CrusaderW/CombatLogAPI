@@ -2,13 +2,15 @@ import sys
 import json
 from datetime import datetime
 from flask import jsonify
-from combatLogAPI import models, masterDF
+
+from combatLogAPI import masterDF
 from combatLogAPI.constants import ACTION_TYPES, SKILL_BY_ME, SKILL_TARGET_ME, \
         FOR_SPLITTER, EVENT_SPLITTER, CRITICAL_SUBSTRING
 
 
 class LogStream:
-    def __init__(self, json_data):
+    def __init__(self, json_data, mongo):
+        self.mongo = mongo
         json_data = json.loads(json_data)
         self.username = json_data['username']
         self.filename = json_data['filename']
@@ -19,15 +21,31 @@ class LogStream:
 
     def store(self):
         #store self.logs to MongoDB
-        if len(self.logs) > 0:
-            rawLogs = models.RawLogs(username = self.username,
-                                 filename = self.filename,
-                                 start = self.logs[0][:24],
-                                 end = self.logs[-0][:24],
-                                 logs = self.logs,
-                                )
-            response = rawLogs.save()
-        print(f'{self.username} uploaded {len(self.logs)} lines')
+        rawLogs = self.mongo.db.raw_logs.find_one({"username": self.username, "filename": self.filename})
+        #print(rawLogs)
+        if rawLogs is None:
+            result = self.mongo.db.raw_logs.insert_one(
+                {'username': self.username,
+                'filename': self.filename,
+                'start': self.logs[0][:24],
+                'end': self.logs[-1][:24],
+                'logs': self.logs})
+            if result.acknowledged:
+                print(f"{self.username} uploaded {len(self.logs)} lines")
+            else:
+                print('An error occured uploading logs from {self.username}: {self.filename}')
+        else:
+            self.logs = rawLogs['logs'] + self.logs
+            result = self.mongo.db.raw_logs.replace_one({"username": self.username, "filename": self.filename},
+                {'username': self.username,
+                'filename': self.filename,
+                'start': rawLogs['start'],
+                'end': self.logs[-1][:24],
+                'logs': self.logs})
+            if result.acknowledged:
+                print(f"{self.username} uploaded {len(self.logs)-len(rawLogs['logs'])} lines (total: {len(self.logs)})")
+            else:
+                print('An error occured appending logs from {self.username}: {self.filename}')
         return "Success"
 
     def parse(self):

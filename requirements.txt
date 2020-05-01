@@ -7,11 +7,11 @@ coverage==4.5.4
 Flask==1.1.1
 flask-mongoengine==0.9.5
 Flask-WTF==0.14.2
+Flask-PyMongo==2.3.0
 importlib-metadata==0.23
 itsdangerous==1.1.0
 Jinja2==2.10.3
 MarkupSafe==1.1.1
-mongoengine==0.18.2
 more-itertools==7.2.0
 numpy==1.17.4
 packaging==19.2
