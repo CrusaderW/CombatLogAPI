@@ -17,7 +17,7 @@ class masterDF(metaclass=Singleton):
     def __init__(self):
 	    self.df = pd.DataFrame()
 
-#Only a permanent solutions until calculation of live data will be done on masterDF...
+#Only a temporary solutions until calculation of live data will be done on masterDF...
     def getDataFrame(self):
         return pd.DataFrame(self.df, copy=True)
 

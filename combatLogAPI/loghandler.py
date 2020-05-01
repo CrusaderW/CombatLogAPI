@@ -2,10 +2,22 @@ import sys
 import json
 from datetime import datetime
 from flask import jsonify
-
 from combatLogAPI import masterDF
 from combatLogAPI.constants import ACTION_TYPES, SKILL_BY_ME, SKILL_TARGET_ME, \
         FOR_SPLITTER, EVENT_SPLITTER, CRITICAL_SUBSTRING
+
+
+class LogQuery:
+    def __init__(self, mongo):
+        self.mongo = mongo
+
+    def getAllLogsInDateTimeWindow(self, date):
+        response = []
+        for entry in self.mongo.db.raw_logs.find({'date': date}):
+            print(f"{entry['username']}: {entry['filename']}")
+            response.append({'username': entry['username'],'logs': entry['logs']})
+        print(response)
+        return {'data':response}
 
 
 class LogStream:
@@ -27,20 +39,18 @@ class LogStream:
             result = self.mongo.db.raw_logs.insert_one(
                 {'username': self.username,
                 'filename': self.filename,
-                'start': self.logs[0][:24],
-                'end': self.logs[-1][:24],
+                'date': self.logs[-1][:10],
                 'logs': self.logs})
             if result.acknowledged:
-                print(f"{self.username} uploaded {len(self.logs)} lines")
+                print(f"{self.username} uploaded {len(self.logs)} lines (new Logfile)")
             else:
-                print('An error occured uploading logs from {self.username}: {self.filename}')
+                print('An error occured creating logs from {self.username}: {self.filename}')
         else:
             self.logs = rawLogs['logs'] + self.logs
             result = self.mongo.db.raw_logs.replace_one({"username": self.username, "filename": self.filename},
                 {'username': self.username,
                 'filename': self.filename,
-                'start': rawLogs['start'],
-                'end': self.logs[-1][:24],
+                'date': rawLogs['date'],
                 'logs': self.logs})
             if result.acknowledged:
                 print(f"{self.username} uploaded {len(self.logs)-len(rawLogs['logs'])} lines (total: {len(self.logs)})")

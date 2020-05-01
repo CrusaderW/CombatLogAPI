@@ -1,22 +1,21 @@
 from flask import request, jsonify
-from combatLogAPI import logparser, masterDF
+from combatLogAPI import loghandler, masterDF
 
 def init_routes(app, mongo):
 
     @app.route('/streamLogs', methods=['POST'])
     def streamLogs():
         json_data = request.get_json()
-        logStream = logparser.LogStream(json_data, mongo)
+        logStream = loghandler.LogStream(json_data, mongo)
         response = logStream.store()
         #logStream.parse()
         #response = logStream.get_response()
         return jsonify(response)
 
 
-    @app.route('/getAllLogs', methods=['GET'])
+    @app.route('/getLogsByDate', methods=['GET'])
     def getLogsByTimeFrame():
-        #reqData = request.data()
-        masterdf = masterDF.masterDF()
-        response = masterdf.collect()
-        #response = True
+        date = request.args.get('date')
+        logQuery = loghandler.LogQuery(mongo)
+        response = logQuery.getAllLogsInDateTimeWindow(date)
         return jsonify(response)
