@@ -8,7 +8,7 @@ def init_routes(app, mongo):
         json_data = request.get_json()
         logStream = loghandler.LogStream(json_data, mongo)
         response = logStream.store()
-        #logStream.parse()
+        logStream.parse()
         #response = logStream.get_response()
         return jsonify(response)
 
@@ -18,4 +18,12 @@ def init_routes(app, mongo):
         date = request.args.get('date')
         logQuery = loghandler.LogQuery(mongo)
         response = logQuery.getAllLogsInDateTimeWindow(date)
+        return jsonify(response)
+
+
+    @app.route('/getParsedLogsByDate', methods=['GET'])
+    def getParsedLogsByTimeFrame():
+        date = request.args.get('date')
+        logQuery = loghandler.LogQuery(mongo)
+        response = logQuery.getAllParsedLogsInDateTimeWindow(date)
         return jsonify(response)

@@ -5,6 +5,7 @@ Click==7.0
 -e git+git@github.com:CrusaderW/CombatLogAPI.git@c9cf93fa13ca2996ed4a6dd2a40cef980a8e9faf#egg=combatLogAPI
 coverage==4.5.4
 Flask==1.1.1
+Flask-Cors==3.0.8
 flask-mongoengine==0.9.5
 Flask-WTF==0.14.2
 Flask-PyMongo==2.3.0

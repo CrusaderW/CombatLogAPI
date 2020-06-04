@@ -1,6 +1,6 @@
 import sys
 import json
-from datetime import datetime
+from datetime import datetime, date
 from flask import jsonify
 from combatLogAPI import masterDF
 from combatLogAPI.constants import ACTION_TYPES, SKILL_BY_ME, SKILL_TARGET_ME, \
@@ -14,11 +14,18 @@ class LogQuery:
     def getAllLogsInDateTimeWindow(self, date):
         response = []
         for entry in self.mongo.db.raw_logs.find({'date': date}):
-            print(f"{entry['username']}: {entry['filename']}")
+            #print(f"{entry['username']}: {entry['filename']}")
             response.append({'username': entry['username'],'logs': entry['logs']})
-        print(response)
+        print(f'Returned {len(response)} chunks of raw logfiles')
         return {'data':response}
 
+    def getAllParsedLogsInDateTimeWindow(self, date):
+        response = {'logs': []}
+        for entry in self.mongo.db.parsed_logs.find({'date': date}):
+            #print(f"{entry['username']}: {entry['filename']}")
+            response = {'logs': entry['logs']}
+        print(f"Returned {len(response['logs'])} parsed loglines")
+        return response
 
 class LogStream:
     def __init__(self, json_data, mongo):
@@ -28,8 +35,7 @@ class LogStream:
         self.filename = json_data['filename']
         self.logs = json_data['logs']
         self.response = {'username': self.username}
-        self.masterdf = masterDF.masterDF()
-        self.df = masterDF.pd.DataFrame()
+        self.parsedLogs = []
 
     def store(self):
         #store self.logs to MongoDB
@@ -46,33 +52,36 @@ class LogStream:
             else:
                 print('An error occured creating logs from {self.username}: {self.filename}')
         else:
-            self.logs = rawLogs['logs'] + self.logs
+            distinctLogs = list(set(rawLogs['logs'] + self.logs))
             result = self.mongo.db.raw_logs.replace_one({"username": self.username, "filename": self.filename},
                 {'username': self.username,
                 'filename': self.filename,
                 'date': rawLogs['date'],
-                'logs': self.logs})
+                'logs': distinctLogs})
             if result.acknowledged:
-                print(f"{self.username} uploaded {len(self.logs)-len(rawLogs['logs'])} lines (total: {len(self.logs)})")
+                print(f"{self.username} uploaded {len(distinctLogs)-len(rawLogs['logs'])} lines (total: {len(distinctLogs)})")
             else:
                 print('An error occured appending logs from {self.username}: {self.filename}')
         return "Success"
 
     def parse(self):
+        allParsedLogs = self.mongo.db.parsed_logs.find_one({"date": date.today().strftime('%Y-%m-%d')})
         for log in self.logs:
             try:
                 logLine = LogLine(log, self.username)
                 parsedLogLine = logLine.parse()
-                self.df = self.df.append(parsedLogLine, ignore_index = True)
+                print(parsedLogLine)
+                self.parsedLogs.append(parsedLogLine)
             except Exception as e:
-                print(e)
-                print('Skipped parsing the following line due to an error.')
+                print(f'\nSkipped parsing the following line due to an error: {e}')
                 print(log)
-                #TODO: Write unhandled lines to logfile.
-        self.masterdf.append(self.df)
-        self.response['lines_parsed'] = len(self.df)
-        self.response['lines_skipped'] = len(self.logs)-len(self.df)
-        return self.response
+        if allParsedLogs:
+            self.parsedLogs = allParsedLogs['logs'] + self.parsedLogs
+        response = self.mongo.db.parsed_logs.replace_one({"date": date.today().strftime('%Y-%m-%d')},
+                {'date': date.today().strftime('%Y-%m-%d'),
+                'logs': self.parsedLogs},
+                upsert=True)
+        return "Success"
 
     def get_response(self):
         self.response['parsed_logs'] = {}
@@ -163,7 +172,7 @@ class LogLine():
             return skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[0]
 
     def getSkillAmount(self, skillTargetAndSkillAmountPart):
-        return int(skillTargetAndSkillAmountPart.split(' ')[1])
+        return int(skillTargetAndSkillAmountPart.split(' for ')[1].split(' ')[0])
 
     def getDamageType(self, skillTargetAndSkillAmountPart):
-        return skillTargetAndSkillAmountPart.split(' ')[2]
+        return skillTargetAndSkillAmountPart.split(' for ')[1].split(' ')[1]
