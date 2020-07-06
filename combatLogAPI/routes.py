@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from combatLogAPI import loghandler, masterDF
+from combatLogAPI import loghandler, ressourcecalculator, masterDF
 
 def init_routes(app, mongo):
 
@@ -10,6 +10,16 @@ def init_routes(app, mongo):
         response = logStream.store()
         logStream.parse()
         #response = logStream.get_response()
+        return jsonify(response)
+
+
+    @app.route('/ressourcecalculator', methods=['GET'])
+    def calculateRessources():
+        data = {}
+        data['item'] = request.args.get('item')
+        data['options'] = request.args.get('options')
+        resCalc = ressourcecalculator.SingleItem(data, mongo)
+        response = resCalc.calculate()
         return jsonify(response)
 
 
