@@ -1,3 +1,4 @@
+import json
 from combatLogAPI import create_app, masterDF
 
 def test_masterDF_is_Singleton(client):
@@ -6,7 +7,7 @@ def test_masterDF_is_Singleton(client):
         assert masterDF1 == masterDF2
 
 def test_streamLogs(client):
-	response = client.post('/streamLogs', json=json_Molan)
+	response = client.post('/streamLogs', json=json.dumps(json_Molan))
 	json_response = response.get_json()
 	assert json_response == {"username": "GeneralMolan",
 				 "lines_parsed":4,
@@ -20,7 +21,7 @@ def test_streamLogs(client):
     			        		}
 				}
 
-	response = client.post('/streamLogs', json=json_Crusader)
+	response = client.post('/streamLogs', json=json.dumps(json_Crusader))
 	json_response = response.get_json()
 	assert json_response == {"username": "CrusaderW",
 				 "lines_parsed":7,
@@ -37,6 +38,7 @@ def test_streamLogs(client):
 
 json_Molan = {
   "username": "GeneralMolan",
+  "filename": "test",
   "logs": [
     {
       "Key": "2019-10-23T11:18:33.232Z",
@@ -59,6 +61,7 @@ json_Molan = {
 
 json_Crusader = {
   "username": "CrusaderW",
+  "filename": "test",
   "logs": [
     {
       "Key": "2019-09-02T23:18:50.522Z",
