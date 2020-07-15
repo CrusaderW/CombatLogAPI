@@ -18,7 +18,7 @@ def init_routes(app, mongo):
         data = {}
         data['item'] = request.args.get('item')
         data['options'] = request.args.get('options')
-        resCalc = ressourcecalculator.SingleItem(data, mongo)
+        resCalc = ressourcecalculator.SingleItem(data)
         response = resCalc.calculate()
         return jsonify(response)
 
