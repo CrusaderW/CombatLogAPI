@@ -3,14 +3,15 @@ from flask import Flask
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from combatLogAPI import routes
-
+from combatLogAPI import db_credentials
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
 
     # initialize db connection
-    app.config["MONGO_URI"] = "mongodb://localhost:27017/Crowfall"
+    print(db_credentials.user + db_credentials.pw)
+    app.config["MONGO_URI"] = "mongodb://"+ db_credentials.user +":"+ db_credentials.pw +"@localhost:27017/Crowfall"
     mongo = PyMongo(app)
 
     #enable CORS
