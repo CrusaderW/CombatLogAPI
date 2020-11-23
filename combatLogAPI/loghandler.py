@@ -30,12 +30,25 @@ class LogQuery:
     def getMyPersonalLogs(self, date, username):
         response = []
         print(f"{date}: {username}")
-        for entry in self.mongo.db.parsed_logs.find({'logs.username':username}):
+        for entry in self.mongo.db.parsed_logs.find({'date':date, 'logs.username':username}):
         #for entry in self.mongo.db.parsed_logs.find({'date': '2020-11-21', 'logs.username':'CrusaderW'}):
             #print(f"{entry['date']}: {entry['logs']}")
             response.append({'username':username,'logs': entry['logs']})
         #print(f"Returned {len(response['logs'])} parsed loglines")
+        if response == []:
+            for entry in self.mongo.db.parsed_logs.find({'logs.username':username}):
+            #for entry in self.mongo.db.parsed_logs.find({'date': '2020-11-21', 'logs.username':'CrusaderW'}):
+                #print(f"{entry['date']}: {entry['logs']}")
+                response.append({'username':username,'logs': entry['logs']})
+        print(f"{username} requested {len(response)} days of data...")
         return response
+
+    def getNPCs(self):
+        response = []
+        for entry in self.mongo.db.NPCs.find({}):
+            response.append(entry['name'])
+        return response
+        #return self.mongo.db.NPCs.find_one({})
 
 class LogStream:
     def __init__(self, json_data, mongo):
@@ -45,6 +58,7 @@ class LogStream:
         self.filename = json_data['filename']
         self.logs = json_data['logs']
         self.response = {'username': self.username}
+        self.NPCs = loghandler.LogQuery(mongo).getNPCs()
         self.parsedLogs = []
 
     def store(self):
@@ -78,9 +92,9 @@ class LogStream:
         allParsedLogs = self.mongo.db.parsed_logs.find_one({"date": date.today().strftime('%Y-%m-%d')})
         for log in self.logs:
             try:
-                logLine = LogLine(log, self.username)
+                logLine = LogLine(log, self.username, self.NPCs)
                 parsedLogLine = logLine.parse()
-                print(parsedLogLine)
+                #print(parsedLogLine)
                 self.parsedLogs.append(parsedLogLine)
             except Exception as e:
                 print(f'\nSkipped parsing the following line due to an error: {e}')
@@ -104,7 +118,7 @@ class LogStream:
 
 class LogLine():
 
-    def __init__(self, log, username):
+    def __init__(self, log, username, NPCs):
         #TODO: Create unified models for JSON and MongoDocument
         self.username = username
         self.log = log
@@ -118,6 +132,7 @@ class LogLine():
                                   'skillCritical',
                                   'username'],
                      }
+        self.NPCs = NPCs
 
         return
 
@@ -132,6 +147,7 @@ class LogLine():
         self.skillName = self.getSkillName(skillByAndSkillNamePart)
         self.dateTime = self.getDateTime()
         self.skillTarget = self.getSkillTarget(skillTargetAndSkillAmountPart)
+        self.ActivityType = self.getActivityType()
         self.skillAmount = self.getSkillAmount(skillTargetAndSkillAmountPart)
         self.skillCritical = self.isCritical(eventPart)
         self.damageType = self.getDamageType(skillTargetAndSkillAmountPart)
@@ -181,6 +197,16 @@ class LogLine():
             return 'unknown'
         else:
             return skillTargetAndSkillAmountPart.split(FOR_SPLITTER,1)[0]
+
+    def getActivityType(self):
+        if self.skillBy in self.NPCs or self.skillTarget in self.NPCs:
+            return 'PvE'
+        if self.skillAction in [DRAIN_DODGE, RESTORE]:
+            return 'Ressources'
+        if not(" " in self.skillTartget) and not(" " in self.getSkillBy):
+            return 'PvP'
+        else:
+            return 'undefined'
 
     def getSkillAmount(self, skillTargetAndSkillAmountPart):
         return int(skillTargetAndSkillAmountPart.split(' for ')[1].split(' ')[0])

@@ -44,3 +44,10 @@ def init_routes(app, mongo):
         logQuery = loghandler.LogQuery(mongo)
         response = logQuery.getMyPersonalLogs(date, username)
         return jsonify(response)
+
+
+    @app.route('/getNPCs', methods=['GET'])
+    def getNPCNames():
+        logQuery = loghandler.LogQuery(mongo)
+        response = logQuery.getNPCs()
+        return jsonify(response)
