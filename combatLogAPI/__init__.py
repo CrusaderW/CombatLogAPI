@@ -10,7 +10,6 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
 
     # initialize db connection
-    print(db_credentials.user + db_credentials.pw)
     app.config["MONGO_URI"] = "mongodb://"+ db_credentials.user +":"+ db_credentials.pw +"@localhost:27017/Crowfall"
     mongo = PyMongo(app)
 
