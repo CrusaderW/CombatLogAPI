@@ -35,3 +35,12 @@ def init_routes(app, mongo):
         logQuery = loghandler.LogQuery(mongo)
         response = logQuery.getAllParsedLogsInDateTimeWindow(date)
         return jsonify(response)
+
+
+    @app.route('/getMyPersonalLogs', methods=['GET'])
+    def getMyPersonalLogs():
+        date = request.args.get('date')
+        username = request.args.get('username')
+        logQuery = loghandler.LogQuery(mongo)
+        response = logQuery.getMyPersonalLogs(date, username)
+        return jsonify(response)

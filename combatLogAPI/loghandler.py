@@ -27,6 +27,16 @@ class LogQuery:
         print(f"Returned {len(response['logs'])} parsed loglines")
         return response
 
+    def getMyPersonalLogs(self, date, username):
+        response = []
+        print(f"{date}: {username}")
+        for entry in self.mongo.db.parsed_logs.find({'logs.username':username}):
+        #for entry in self.mongo.db.parsed_logs.find({'date': '2020-11-21', 'logs.username':'CrusaderW'}):
+            #print(f"{entry['date']}: {entry['logs']}")
+            response.append({'username':username,'logs': entry['logs']})
+        #print(f"Returned {len(response['logs'])} parsed loglines")
+        return response
+
 class LogStream:
     def __init__(self, json_data, mongo):
         self.mongo = mongo
@@ -45,7 +55,7 @@ class LogStream:
             result = self.mongo.db.raw_logs.insert_one(
                 {'username': self.username,
                 'filename': self.filename,
-                'date': self.logs[-1][:10],
+                'date': self.logs[-2][:10],
                 'logs': self.logs})
             if result.acknowledged:
                 print(f"{self.username} uploaded {len(self.logs)} lines (new Logfile)")
@@ -74,7 +84,8 @@ class LogStream:
                 self.parsedLogs.append(parsedLogLine)
             except Exception as e:
                 print(f'\nSkipped parsing the following line due to an error: {e}')
-                print(log)
+                self.mongo.db.parsing_errors.insert_one({'Username':self.username,'rawLog':log})
+                print('Appended uncaught Logline: '+log)
         if allParsedLogs:
             self.parsedLogs = allParsedLogs['logs'] + self.parsedLogs
         response = self.mongo.db.parsed_logs.replace_one({"date": date.today().strftime('%Y-%m-%d')},
