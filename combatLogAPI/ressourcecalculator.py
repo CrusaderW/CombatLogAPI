@@ -1,6 +1,6 @@
 import pymongo
 output,effect_found=dict(),False
-client = pymongo.MongoClient("212.83.56.166")
+client = pymongo.MongoClient("0.0.0.0")
 mydb = client["Crowfall"]
 mycol = mydb["Resources"]
 full_dict=mycol.find_one({},{"_id": 0, "Items": 1})['Items']
